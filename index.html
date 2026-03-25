@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)file:///C:/Users/Usuario/Downloads/o2_comisiones_inson_1.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comisiones O2 — INSON</title>
+<script src="./index_files/supabase-js@2"></script>
+<style>
+  :root{
+    --o: #FF6B2D; --o-l: #FFF0E8;
+    --b: #1A56A0; --b-l: #EBF3FB;
+    --g: #1E7D45; --g-l: #E8F5EE;
+    --w: #92600A; --w-l: #FEF3CD;
+    --r: #B91C1C; --r-l: #FEE2E2;
+    --gray: #6B7280; --gray-l: #F3F4F6;
+    --border: #E5E7EB;
+    --text: #111827; --text2: #6B7280; --text3: #9CA3AF;
+    --bg: #FFFFFF; --bg2: #F9FAFB;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F1F5F9;color:var(--text);min-height:100vh}
+  
+  .app{max-width:900px;margin:0 auto;padding:16px}
+  
+  /* HEADER */
+  .header{background:var(--o);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+  .header-logo{width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+  .header-title{font-size:17px;font-weight:600;color:#fff}
+  .header-sub{font-size:12px;color:rgba(255,255,255,.8);margin-top:1px}
+  .header-status{margin-left:auto;font-size:11px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;flex-shrink:0}
+  .dot.off{background:#FCA5A5}
+
+  /* TABS */
+  .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg);border-radius:var(--radius);padding:4px;border:1px solid var(--border);overflow-x:auto}
+  .tab{flex:1;min-width:80px;padding:8px 6px;border:none;background:none;border-radius:var(--radius-sm);font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+  .tab:hover{background:var(--gray-l)}
+  .tab.on{background:var(--o);color:#fff;font-weight:500}
+
+  .pane{display:none}.pane.on{display:block}
+
+  /* CARDS */
+  .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+  .card-best{border:2px solid var(--b)}
+  .card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+
+  /* GRID */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+
+  /* FORM */
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+  .field label{font-size:12px;font-weight:600;color:var(--text2)}
+  select,input[type=text],input[type=number]{width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none}
+  select:focus,input:focus{border-color:var(--b)}
+  
+  /* BUTTONS */
+  .btn{height:38px;padding:0 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap}
+  .btn:hover{background:var(--gray-l)}
+  .btn-p{background:var(--b);color:#fff;border-color:var(--b)}
+  .btn-p:hover{opacity:.9;background:var(--b)}
+  .btn-o{background:var(--o);color:#fff;border-color:var(--o)}
+  .btn-o:hover{opacity:.9;background:var(--o)}
+  .btn-d{color:var(--r);border-color:#FECACA}
+  .btn-sm{height:30px;padding:0 10px;font-size:12px}
+  .btn-full{width:100%}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+  .b-top{background:var(--g-l);color:var(--g)}
+  .b-prem{background:var(--w-l);color:var(--w)}
+  .b-no{background:var(--gray-l);color:var(--gray)}
+  .b-blue{background:var(--b-l);color:var(--b)}
+  .b-orange{background:var(--o-l);color:var(--o)}
+
+  /* ROWS */
+  .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:none}
+  .rl{font-size:13px;color:var(--text2)}
+  .rv{font-size:14px;font-weight:600;color:var(--text)}
+  .rv.g{color:var(--g)}
+  .rv.big{font-size:22px}
+
+  /* PROGRESS */
+  .pb{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0 3px}
+  .pf{height:100%;border-radius:3px;transition:width .4s}
+
+  /* ALERTS */
+  .alert{border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.5}
+  .alert strong{font-weight:600}
+  .alert-g{background:var(--g-l);color:var(--g);border:1px solid #BBF7D0}
+  .alert-w{background:var(--w-l);color:var(--w);border:1px solid #FDE68A}
+  .alert-b{background:var(--b-l);color:var(--b);border:1px solid #BFDBFE}
+  .alert-o{background:var(--o-l);color:var(--o);border:1px solid #FED7AA}
+
+  /* METRIC */
+  .metric{background:var(--bg2);border-radius:var(--radius-sm);padding:12px;text-align:center}
+  .metric .l{font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500}
+  .metric .v{font-size:24px;font-weight:700;color:var(--text)}
+  .metric .v.g{color:var(--g)}
+
+  /* TABLE */
+  table{width:100%;font-size:13px;border-collapse:collapse}
+  th{text-align:left;padding:8px;color:var(--text2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+  td{padding:8px;border-bottom:1px solid var(--border);color:var(--text)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--bg2)}
+  .tc{text-align:center}
+
+  /* LOTE MODE */
+  .lote-item{display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:6px}
+  .lote-num{width:22px;height:22px;background:var(--o);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+  .lote-prod{flex:1;font-size:13px;color:var(--text)}
+  .lote-tienda{font-size:12px;font-weight:600;color:var(--b);background:var(--b-l);padding:2px 8px;border-radius:20px}
+  .lote-motivo{font-size:11px;color:var(--text2);margin-top:2px}
+
+  /* SETUP */
+  .setup{background:var(--bg);border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center}
+  .setup h3{font-size:16px;font-weight:600;margin-bottom:8px}
+  .setup p{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+
+  @media(max-width:600px){
+    .g2,.g3{grid-template-columns:1fr}
+    .gcards{grid-template-columns:1fr 1fr}
+    .tabs .tab{font-size:12px;padding:7px 4px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">O2</div>
+    <div>
+      <div class="header-title">Comisiones O2 — INSON S.A.</div>
+      <div class="header-sub">Protocolo Marzo 2026</div>
+    </div>
+    <div class="header-status">
+      <div class="dot" id="db-dot"></div>
+      <span id="db-txt">Sincronizado</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="tab(&#39;venta&#39;,this)">Venta</button>
+    <button class="tab" onclick="tab(&#39;lote&#39;,this)">Lote</button>
+    <button class="tab" onclick="tab(&#39;tiendas&#39;,this)">Tiendas</button>
+    <button class="tab" onclick="tab(&#39;trimestral&#39;,this)">Trimestral</button>
+    <button class="tab" onclick="tab(&#39;extras&#39;,this)">Extras</button>
+    <button class="tab" onclick="tab(&#39;tarifas&#39;,this)">Tarifas</button>
+  </div>
+
+  <!-- VENTA -->
+  <div id="p-venta" class="pane on">
+    <div class="card">
+      <div class="card-title">Selecciona el producto</div>
+      <div class="g2">
+        <div class="field">
+          <label>Producto</label>
+          <select id="s-prod" onchange="onProd()">
+            <option value="">— Selecciona —</option>
+            <optgroup label="Convergente (BAF)">
+              <option value="c_1g_375_tvnf">Fibra 1GB + Móvil 375GB + TV + Netflix — 120€</option>
+              <option value="c_1g_350_tv">Fibra 1GB + Móvil 350GB + TV — 115€</option>
+              <option value="c_600_60_tvnf">Fibra 600MB + Móvil 60GB + TV + Netflix — 105€</option>
+              <option value="c_600_35_tv">Fibra 600MB + Móvil 35GB + TV — 92€</option>
+              <option value="c_1g_120">Fibra 1GB + Móvil 120GB — 92€</option>
+              <option value="c_600_10_40">Fibra 600MB + Móvil 10GB + Línea 40GB — 83€</option>
+              <option value="c_600_60">Fibra 600MB + Móvil 60GB — 80€</option>
+            </optgroup>
+            <optgroup label="Solo fibra (BAF)">
+              <option value="f_1g">Fibra 1GB — 65€</option>
+              <option value="f_600">Fibra 600MB — 50€</option>
+              <option value="f_300">Fibra 300MB — 40€</option>
+            </optgroup>
+            <optgroup label="2ª Residencia (no BAF)">
+              <option value="s_1g">2ª Residencia 1GB — 21€</option>
+              <option value="s_600">2ª Residencia 600MB — 15€</option>
+              <option value="s_300">2ª Residencia 300MB — 11€</option>
+            </optgroup>
+            <optgroup label="Solo móvil">
+              <option value="m_300">Móvil 300GB — 45€</option>
+              <option value="m_150">Móvil 150GB — 36€</option>
+              <option value="m_100">Móvil 100GB — 20€</option>
+              <option value="m_50">Móvil 50GB — 10€</option>
+            </optgroup>
+            <optgroup label="Línea adicional">
+              <option value="l_300">Línea Adicional 300GB — 15€</option>
+              <option value="l_150">Línea Adicional 150GB — 14€</option>
+              <option value="l_40">Línea Adicional 40GB — 13€</option>
+            </optgroup>
+            <optgroup label="Terminal">
+              <option value="t_alta">Terminal Gama Alta ≥700€ — 25€</option>
+              <option value="t_media">Terminal Gama Media 300-700€ — 15€</option>
+              <option value="t_baja">Terminal Gama Baja &lt;300€ — 5€</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>TV Movistar Plus+</label>
+          <select id="s-tv" onchange="onProd()"><option value="0">No</option><option value="26">Sí — hasta 26€</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div id="venta-result" style="display:none">
+      <div class="card">
+        <div class="card-title">Comisión base</div>
+        <div id="v-desglose"></div>
+      </div>
+      <div id="v-sugerencia"></div>
+      <div class="card">
+        <div class="card-title">Registrar venta</div>
+        <div class="g2">
+          <div class="field">
+            <label>Tienda</label>
+            <select id="s-reg"><option value="">— Selecciona tienda —</option><option value="1">Tarragona (18 BAF)</option><option value="2">Reus (4 BAF)</option><option value="3">El Vendrell (0 BAF)</option></select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn btn-o btn-full" onclick="registrarVenta()">Registrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOTE -->
+  <div id="p-lote" class="pane">
+    <div class="card">
+      <div class="card-title">Operaciones a tramitar hoy</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Añade todas las operaciones que vas a tramitar y te digo el reparto óptimo entre tiendas.</p>
+      <div class="g2" style="margin-bottom:10px">
+        <div class="field">
+          <label>Producto</label>
+          <select id="l-prod">
+            <option value="">— Selecciona —</option>
+            <optgroup label="Convergente (BAF)">
+              <option value="c_1g_375_tvnf">Fibra 1GB + Móvil 375GB + TV + Netflix — 120€</option>
+              <option value="c_1g_350_tv">Fibra 1GB + Móvil 350GB + TV — 115€</option>
+              <option value="c_600_60_tvnf">Fibra 600MB + Móvil 60GB + TV + Netflix — 105€</option>
+              <option value="c_600_35_tv">Fibra 600MB + Móvil 35GB + TV — 92€</option>
+              <option value="c_1g_120">Fibra 1GB + Móvil 120GB — 92€</option>
+              <option value="c_600_10_40">Fibra 600MB + Móvil 10GB + Línea 40GB — 83€</option>
+              <option value="c_600_60">Fibra 600MB + Móvil 60GB — 80€</option>
+            </optgroup>
+            <optgroup label="Solo fibra (BAF)">
+              <option value="f_1g">Fibra 1GB — 65€</option>
+              <option value="f_600">Fibra 600MB — 50€</option>
+              <option value="f_300">Fibra 300MB — 40€</option>
+            </optgroup>
+            <optgroup label="Solo móvil">
+              <option value="m_300">Móvil 300GB — 45€</option>
+              <option value="m_150">Móvil 150GB — 36€</option>
+              <option value="m_100">Móvil 100GB — 20€</option>
+              <option value="m_50">Móvil 50GB — 10€</option>
+            </optgroup>
+            <optgroup label="Línea adicional">
+              <option value="l_300">Línea Adicional 300GB — 15€</option>
+              <option value="l_150">Línea Adicional 150GB — 14€</option>
+              <option value="l_40">Línea Adicional 40GB — 13€</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn btn-p" onclick="addLoteItem()">+ Añadir</button>
+          <button class="btn" onclick="calcularLote()">Calcular reparto</button>
+        </div>
+      </div>
+      <div id="lote-lista" style="min-height:40px"></div>
+    </div>
+    <div id="lote-result"></div>
+  </div>
+
+  <!-- TIENDAS -->
+  <div id="p-tiendas" class="pane">
+    <div class="gcards" id="t-cards"><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:15px;font-weight:600">Tarragona</span>
+        <span class="badge b-top" style="font-size:10px">PDV TOP</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:4px">18 <span style="font-size:13px;font-weight:400;color:var(--text2)">BAF</span></div>
+      <div class="pb"><div class="pf" style="width:60%;background:var(--w)"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Faltan <strong>3</strong> para 2000€</div>
+      <div style="font-size:12px;color:var(--text2)">Bonus lote: <strong style="color:var(--g)">1500€</strong></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="editarBaf(1)">Editar BAF</button>
+        <button class="btn btn-sm btn-d" onclick="eliminarTienda(1)">Eliminar</button>
+      </div>
+    </div><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:15px;font-weight:600">Reus</span>
+        <span class="badge b-no" style="font-size:10px">Sin nivel</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:4px">4 <span style="font-size:13px;font-weight:400;color:var(--text2)">BAF</span></div>
+      <div class="pb"><div class="pf" style="width:29%;background:#5DCAA5"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Faltan <strong>7</strong> para 1100€</div>
+      <div style="font-size:12px;color:var(--text2)">Bonus lote: <strong style="color:var(--g)">450€</strong></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="editarBaf(2)">Editar BAF</button>
+        <button class="btn btn-sm btn-d" onclick="eliminarTienda(2)">Eliminar</button>
+      </div>
+    </div><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:15px;font-weight:600">El Vendrell</span>
+        <span class="badge b-no" style="font-size:10px">Sin nivel</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:4px">0 <span style="font-size:13px;font-weight:400;color:var(--text2)">BAF</span></div>
+      <div class="pb"><div class="pf" style="width:0%;background:#5DCAA5"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Faltan <strong>4</strong> para 450€</div>
+      <div style="font-size:12px;color:var(--text2)">Bonus lote: <strong style="color:var(--g)">0€</strong></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="editarBaf(3)">Editar BAF</button>
+        <button class="btn btn-sm btn-d" onclick="eliminarTienda(3)">Eliminar</button>
+      </div>
+    </div></div>
+    <div class="card">
+      <div class="card-title">Añadir tienda</div>
+      <div class="g2">
+        <div class="field"><label>Nombre</label><input type="text" id="i-nueva" placeholder="Nombre de la tienda"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn btn-p btn-full" onclick="addTienda()">Añadir</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Resumen mes actual</div>
+      <div class="g3" id="t-resumen">
+    <div class="metric"><div class="l">BAF totales</div><div class="v">22</div></div>
+    <div class="metric"><div class="l">Bonus lotes</div><div class="v g">1950€</div></div>
+    <div class="metric"><div class="l">Incentivo conectividad</div><div class="v g">165€</div></div></div>
+    </div>
+  </div>
+
+  <!-- TRIMESTRAL -->
+  <div id="p-trimestral" class="pane">
+    <div class="card">
+      <div class="card-title">Fidelización enero–febrero–marzo 2026</div>
+      <div class="gcards" id="trim-cards"><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:15px;font-weight:600">Tarragona</span>
+        <span class="badge b-top" style="font-size:10px">PDV TOP</span>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:var(--g);margin-bottom:4px">1800€</div>
+      <div class="pb"><div class="pf" style="width:100%;background:var(--g)"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">78 BAF · Nivel máximo</div>
+    </div><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:15px;font-weight:600">Reus</span>
+        <span class="badge b-no" style="font-size:10px">Sin nivel</span>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:var(--w);margin-bottom:4px">0€</div>
+      <div class="pb"><div class="pf" style="width:13%;background:var(--w)"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">4 BAF · Faltan 26 para PDV TOP</div>
+    </div><div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:15px;font-weight:600">El Vendrell</span>
+        <span class="badge b-no" style="font-size:10px">Sin nivel</span>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:var(--w);margin-bottom:4px">0€</div>
+      <div class="pb"><div class="pf" style="width:0%;background:var(--w)"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">0 BAF · Faltan 30 para PDV TOP</div>
+    </div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Histórico por mes</div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Tienda</th><th class="tc">Enero</th><th class="tc">Febrero</th><th class="tc">Marzo</th><th class="tc">Total</th><th class="tc">Nivel</th><th class="tc">Bonus</th></tr></thead>
+        <tbody id="trim-tabla"><tr>
+      <td style="font-weight:600">Tarragona</td>
+      <td class="tc">33</td><td class="tc">27</td><td class="tc">18</td>
+      <td class="tc" style="font-weight:600">78</td>
+      <td class="tc"><span class="badge b-top" style="font-size:10px">PDV TOP</span></td>
+      <td class="tc" style="color:var(--g);font-weight:600">1800€</td>
+    </tr><tr>
+      <td style="font-weight:600">Reus</td>
+      <td class="tc">0</td><td class="tc">0</td><td class="tc">4</td>
+      <td class="tc" style="font-weight:600">4</td>
+      <td class="tc"><span class="badge b-no" style="font-size:10px">Sin nivel</span></td>
+      <td class="tc" style="color:var(--g);font-weight:600">—</td>
+    </tr><tr>
+      <td style="font-weight:600">El Vendrell</td>
+      <td class="tc">0</td><td class="tc">0</td><td class="tc">0</td>
+      <td class="tc" style="font-weight:600">0</td>
+      <td class="tc"><span class="badge b-no" style="font-size:10px">Sin nivel</span></td>
+      <td class="tc" style="color:var(--g);font-weight:600">—</td>
+    </tr></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTRAS -->
+  <div id="p-extras" class="pane">
+    <div class="card">
+      <div class="card-title">Comisiones extra puntuales</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Añade los extras que comunique INSON. Se suman automáticamente al calcular.</p>
+      <div class="g2" style="margin-bottom:10px">
+        <div class="field"><label>Nombre</label><input type="text" id="e-nombre" placeholder="Ej: Bonus portabilidad marzo"></div>
+        <div class="field"><label>Importe (€)</label><input type="number" id="e-importe" placeholder="15" min="0"></div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="field"><label>Aplica a</label>
+          <select id="e-tipo"><option value="baf">Solo BAF</option><option value="movil">Solo móvil</option><option value="todo">Todo</option></select>
+        </div>
+        <div style="display:flex;align-items:flex-end"><button class="btn btn-p btn-full" onclick="addExtra()">Añadir extra</button></div>
+      </div>
+      <div id="extras-lista"><p style="font-size:13px;color:var(--text2)">Sin extras configurados.</p></div>
+    </div>
+  </div>
+
+  <!-- TARIFAS -->
+  <div id="p-tarifas" class="pane">
+    <div class="card">
+      <div class="card-title">Comisiones fijas</div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Producto</th><th class="tc">€</th><th class="tc">BAF</th></tr></thead><tbody id="t-prod"><tr><td>Fibra 1GB + Móvil 375GB + TV + Netflix</td><td class="tc" style="color:var(--g);font-weight:600">120€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 1GB + Móvil 350GB + TV</td><td class="tc" style="color:var(--g);font-weight:600">115€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 600MB + Móvil 60GB + TV + Netflix</td><td class="tc" style="color:var(--g);font-weight:600">105€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 600MB + Móvil 35GB + TV</td><td class="tc" style="color:var(--g);font-weight:600">92€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 1GB + Móvil 120GB</td><td class="tc" style="color:var(--g);font-weight:600">92€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 600MB + Móvil 10GB + Línea 40GB</td><td class="tc" style="color:var(--g);font-weight:600">83€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 600MB + Móvil 60GB</td><td class="tc" style="color:var(--g);font-weight:600">80€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 1GB</td><td class="tc" style="color:var(--g);font-weight:600">65€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 600MB</td><td class="tc" style="color:var(--g);font-weight:600">50€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>Fibra 300MB</td><td class="tc" style="color:var(--g);font-weight:600">40€</td><td class="tc" style="color:var(--g)">Sí</td></tr><tr><td>2ª Residencia 1GB</td><td class="tc" style="color:var(--g);font-weight:600">21€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>2ª Residencia 600MB</td><td class="tc" style="color:var(--g);font-weight:600">15€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>2ª Residencia 300MB</td><td class="tc" style="color:var(--g);font-weight:600">11€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Móvil 300GB</td><td class="tc" style="color:var(--g);font-weight:600">45€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Móvil 150GB</td><td class="tc" style="color:var(--g);font-weight:600">36€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Móvil 100GB</td><td class="tc" style="color:var(--g);font-weight:600">20€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Móvil 50GB</td><td class="tc" style="color:var(--g);font-weight:600">10€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Línea Adicional 300GB</td><td class="tc" style="color:var(--g);font-weight:600">15€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Línea Adicional 150GB</td><td class="tc" style="color:var(--g);font-weight:600">14€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Línea Adicional 40GB</td><td class="tc" style="color:var(--g);font-weight:600">13€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Terminal Gama Alta ≥700€</td><td class="tc" style="color:var(--g);font-weight:600">25€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Terminal Gama Media 300-700€</td><td class="tc" style="color:var(--g);font-weight:600">15€</td><td class="tc" style="color:var(--text3)">No</td></tr><tr><td>Terminal Gama Baja &lt;300€</td><td class="tc" style="color:var(--g);font-weight:600">5€</td><td class="tc" style="color:var(--text3)">No</td></tr></tbody></table></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Bonus por lotes mensuales</div>
+      <table><thead><tr><th>BAF</th><th class="tc">Bonus</th><th class="tc">Incremento</th></tr></thead>
+      <tbody>
+        <tr><td>4–10</td><td class="tc" style="color:var(--g);font-weight:600">450€</td><td class="tc" style="color:var(--text2)">+450€</td></tr>
+        <tr><td>11–14</td><td class="tc" style="color:var(--g);font-weight:600">1.100€</td><td class="tc" style="color:var(--text2)">+650€</td></tr>
+        <tr><td>15–20</td><td class="tc" style="color:var(--g);font-weight:600">1.500€</td><td class="tc" style="color:var(--text2)">+400€</td></tr>
+        <tr><td>21–30</td><td class="tc" style="color:var(--g);font-weight:600">2.000€</td><td class="tc" style="color:var(--text2)">+500€</td></tr>
+        <tr><td>31–40</td><td class="tc" style="color:var(--g);font-weight:600">2.300€</td><td class="tc" style="color:var(--text2)">+300€</td></tr>
+        <tr><td>41+</td><td class="tc" style="color:var(--g);font-weight:600">2.600€</td><td class="tc" style="color:var(--text2)">+300€</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Fidelización trimestral</div>
+      <table><thead><tr><th>BAF trimestre</th><th class="tc">Nivel</th><th class="tc">Bonus</th></tr></thead>
+      <tbody>
+        <tr><td>30 o más</td><td class="tc"><span class="badge b-top">PDV TOP</span></td><td class="tc" style="color:var(--g);font-weight:600">1.800€</td></tr>
+        <tr><td>15–29</td><td class="tc"><span class="badge b-prem">PDV Premium</span></td><td class="tc" style="color:var(--g);font-weight:600">750€</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIGURACIÓN SUPABASE
+// ═══════════════════════════════════════
+const SUPA_URL = 'https://koxdqgskvaeqvzfogxih.supabase.co';
+const SUPA_KEY = 'sb_publishable_2AjjACXANCvFJ67zu10iLw_qZbr-HGi';
+
+let sb = null;
+let dbOk = false;
+
+async function initDB(){
+  try{
+    sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+    const {error} = await sb.from('tiendas').select('id').limit(1);
+    if(error) throw error;
+    dbOk = true;
+    setDBStatus(true);
+    await cargarTiendas();
+    await cargarExtras();
+  } catch(e){
+    setDBStatus(false);
+    console.warn('Supabase no disponible, modo local:', e.message);
+    cargarLocal();
+  }
+}
+
+function setDBStatus(ok){
+  document.getElementById('db-dot').className = 'dot'+(ok?'':' off');
+  document.getElementById('db-txt').textContent = ok?'Sincronizado':'Modo local';
+}
+
+// ═══════════════════════════════════════
+// DATOS
+// ═══════════════════════════════════════
+const PROD={
+  c_1g_375_tvnf:{n:"Fibra 1GB + Móvil 375GB + TV + Netflix",c:120,baf:true,movil:true},
+  c_1g_350_tv:{n:"Fibra 1GB + Móvil 350GB + TV",c:115,baf:true,movil:true},
+  c_600_60_tvnf:{n:"Fibra 600MB + Móvil 60GB + TV + Netflix",c:105,baf:true,movil:true},
+  c_600_35_tv:{n:"Fibra 600MB + Móvil 35GB + TV",c:92,baf:true,movil:true},
+  c_1g_120:{n:"Fibra 1GB + Móvil 120GB",c:92,baf:true,movil:true},
+  c_600_10_40:{n:"Fibra 600MB + Móvil 10GB + Línea 40GB",c:83,baf:true,movil:true},
+  c_600_60:{n:"Fibra 600MB + Móvil 60GB",c:80,baf:true,movil:true},
+  f_1g:{n:"Fibra 1GB",c:65,baf:true,movil:false},
+  f_600:{n:"Fibra 600MB",c:50,baf:true,movil:false},
+  f_300:{n:"Fibra 300MB",c:40,baf:true,movil:false},
+  s_1g:{n:"2ª Residencia 1GB",c:21,baf:false,movil:false},
+  s_600:{n:"2ª Residencia 600MB",c:15,baf:false,movil:false},
+  s_300:{n:"2ª Residencia 300MB",c:11,baf:false,movil:false},
+  m_300:{n:"Móvil 300GB",c:45,baf:false,movil:true},
+  m_150:{n:"Móvil 150GB",c:36,baf:false,movil:true},
+  m_100:{n:"Móvil 100GB",c:20,baf:false,movil:true},
+  m_50:{n:"Móvil 50GB",c:10,baf:false,movil:true},
+  l_300:{n:"Línea Adicional 300GB",c:15,baf:false,movil:false},
+  l_150:{n:"Línea Adicional 150GB",c:14,baf:false,movil:false},
+  l_40:{n:"Línea Adicional 40GB",c:13,baf:false,movil:false},
+  t_alta:{n:"Terminal Gama Alta ≥700€",c:25,baf:false,movil:false},
+  t_media:{n:"Terminal Gama Media 300-700€",c:15,baf:false,movil:false},
+  t_baja:{n:"Terminal Gama Baja <300€",c:5,baf:false,movil:false},
+};
+
+const LOTES=[{min:4,max:10,b:450},{min:11,max:14,b:1100},{min:15,max:20,b:1500},{min:21,max:30,b:2000},{min:31,max:40,b:2300},{min:41,max:9999,b:2600}];
+const TNIVELES=[{min:30,b:1800,n:"PDV TOP"},{min:15,b:750,n:"PDV Premium"}];
+
+let TIENDAS=[];
+let EXTRAS=[];
+let LOTE_ITEMS=[];
+
+function getBL(x){for(const l of LOTES)if(x>=l.min&&x<=l.max)return l.b;return 0;}
+function getSig(x){for(const l of LOTES)if(x<l.min)return l;return null;}
+function getNT(x){for(const t of TNIVELES)if(x>=t.min)return t;return null;}
+function fmt(n){return n.toLocaleString('es-ES')+'€';}
+function trim(t){return t.baf_enero+t.baf_febrero+t.baf_mes;}
+
+// ═══════════════════════════════════════
+// SUPABASE CRUD
+// ═══════════════════════════════════════
+async function cargarTiendas(){
+  if(dbOk){
+    const {data,error}=await sb.from('tiendas').select('*').order('id');
+    if(!error&&data) TIENDAS=data;
+  }
+  renderAll();
+}
+
+async function cargarExtras(){
+  if(dbOk){
+    const {data,error}=await sb.from('extras').select('*').order('id');
+    if(!error&&data) EXTRAS=data;
+  }
+}
+
+async function guardarTienda(t){
+  if(!dbOk){saveLocal();return;}
+  const {id,...data}=t;
+  if(id && id>0){
+    await sb.from('tiendas').update(data).eq('id',id);
+  } else {
+    const {data:nuevo}=await sb.from('tiendas').insert(data).select().single();
+    if(nuevo) t.id=nuevo.id;
+  }
+  saveLocal();
+}
+
+async function eliminarTienda(id){
+  if(dbOk) await sb.from('tiendas').delete().eq('id',id);
+  TIENDAS=TIENDAS.filter(t=>t.id!==id);
+  saveLocal();renderAll();
+}
+
+async function guardarExtra(e){
+  if(!dbOk){saveLocal();return;}
+  const {id,...data}=e;
+  if(id&&id>0){
+    await sb.from('extras').update(data).eq('id',id);
+  } else {
+    const {data:nuevo}=await sb.from('extras').insert(data).select().single();
+    if(nuevo) e.id=nuevo.id;
+  }
+  saveLocal();
+}
+
+async function eliminarExtra(id){
+  if(dbOk) await sb.from('extras').delete().eq('id',id);
+  EXTRAS=EXTRAS.filter(e=>e.id!==id);
+  saveLocal();renderExtras();
+}
+
+function cargarLocal(){
+  try{
+    const t=localStorage.getItem('o2_tiendas');
+    const e=localStorage.getItem('o2_extras');
+    if(t) TIENDAS=JSON.parse(t);
+    if(e) EXTRAS=JSON.parse(e);
+    if(!TIENDAS.length) TIENDAS=[
+      {id:1,nombre:"Tarragona",baf_mes:18,baf_enero:33,baf_febrero:27},
+      {id:2,nombre:"Reus",baf_mes:4,baf_enero:0,baf_febrero:0},
+      {id:3,nombre:"El Vendrell",baf_mes:0,baf_enero:0,baf_febrero:0},
+    ];
+  }catch(e){}
+  renderAll();
+}
+
+function saveLocal(){
+  try{
+    localStorage.setItem('o2_tiendas',JSON.stringify(TIENDAS));
+    localStorage.setItem('o2_extras',JSON.stringify(EXTRAS));
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════
+// LÓGICA DE SUGERENCIA
+// ═══════════════════════════════════════
+function scoreTienda(t, bafExtra=0){
+  const tr=trim(t)+bafExtra;
+  const bafMes=t.baf_mes+bafExtra;
+  const nvTrim=getNT(tr);
+  const sig=getSig(bafMes);
+  const ritmo=(t.baf_enero+t.baf_febrero)/2;
+
+  let score=0, razon='', prioridad=0;
+
+  if(!nvTrim){
+    const f=15-tr;
+    score=10000-f*100;
+    prioridad=1;
+    razon=`Necesita ${f} BAF más para PDV Premium (+750€)`;
+  } else if(nvTrim.n==='PDV Premium'){
+    const f=30-tr;
+    score=8000-f*100;
+    prioridad=1;
+    razon=`Necesita ${f} BAF más para PDV TOP (+1.050€ adicionales)`;
+  } else {
+    prioridad=2;
+    if(!sig){score=500;razon='Lote máximo alcanzado';}
+    else {
+      const euros=sig.b-getBL(bafMes);
+      const f=sig.min-bafMes;
+      const prob=ritmo>0?Math.min(1,ritmo/Math.max(f,1)):0.5;
+      score=euros/Math.max(f,1)*prob*100;
+      razon=f===1?`¡Solo 1 BAF para subir al tramo de ${fmt(sig.b)}!`:`Faltan ${f} BAF para +${fmt(euros)} de bonus`;
+    }
+  }
+  return {t,score,razon,prioridad,bafMes};
+}
+
+function repartirLote(items){
+  const bafItems=items.filter(k=>PROD[k]?.baf);
+  const noBafItems=items.filter(k=>!PROD[k]?.baf);
+  
+  // Simulamos el reparto BAF óptimo
+  const estado=TIENDAS.map(t=>({...t,baf_mes:t.baf_mes}));
+  const reparto=[];
+
+  for(let i=0;i<bafItems.length;i++){
+    const tipo=bafItems[i];
+    const scores=estado.map(t=>scoreTienda(t));
+    scores.sort((a,b)=>b.score-a.score);
+    const mejor=scores[0];
+    const tiendaElegida=estado.find(t=>t.id===mejor.t.id);
+    tiendaElegida.baf_mes++;
+    reparto.push({tipo,tienda:mejor.t.nombre,razon:mejor.razon,prioridad:mejor.prioridad});
+  }
+
+  // No-BAF: cualquier tienda, sin impacto
+  noBafItems.forEach(tipo=>{
+    reparto.push({tipo,tienda:'Cualquier tienda',razon:'No afecta a lotes ni trimestral',prioridad:0});
+  });
+
+  return reparto;
+}
+
+// ═══════════════════════════════════════
+// RENDER FUNCIONES
+// ═══════════════════════════════════════
+function renderAll(){
+  refreshSelReg();
+  renderTiendas();
+  renderResMes();
+  renderTrim();
+  renderTabla();
+  renderExtras();
+}
+
+function refreshSelReg(){
+  const s=document.getElementById('s-reg');
+  const prev=s.value;
+  s.innerHTML='<option value="">— Selecciona tienda —</option>';
+  TIENDAS.forEach(t=>{
+    const o=document.createElement('option');
+    o.value=t.id;
+    o.textContent=`${t.nombre} (${t.baf_mes} BAF)`;
+    s.appendChild(o);
+  });
+  if(prev) s.value=prev;
+}
+
+function onProd(){
+  const tipo=document.getElementById('s-prod').value;
+  const tv=parseInt(document.getElementById('s-tv').value)||0;
+  const res=document.getElementById('venta-result');
+  if(!tipo){res.style.display='none';return;}
+  res.style.display='block';
+  const p=PROD[tipo];
+  const extrasApl=EXTRAS.filter(e=>e.tipo==='todo'||(e.tipo==='baf'&&p.baf)||(e.tipo==='movil'&&p.movil));
+  const extTotal=extrasApl.reduce((s,e)=>s+e.importe,0);
+  const total=p.c+tv+extTotal;
+
+  let h=`<div class="row"><span class="rl">${p.n}</span><span class="rv">${fmt(p.c)}</span></div>`;
+  if(tv>0) h+=`<div class="row"><span class="rl">TV Movistar Plus+</span><span class="rv">+${fmt(tv)}</span></div>`;
+  extrasApl.forEach(e=>{h+=`<div class="row"><span class="rl">Extra: ${e.nombre}</span><span class="rv" style="color:var(--g)">+${fmt(e.importe)}</span></div>`;});
+  h+=`<div class="row"><span class="rl" style="font-weight:600">Total comisión</span><span class="rv g big">${fmt(total)}</span></div>`;
+  document.getElementById('v-desglose').innerHTML=h;
+
+  // Sugerencia
+  const sugEl=document.getElementById('v-sugerencia');
+  if(!p.baf){
+    sugEl.innerHTML=`<div class="alert alert-b"><strong>Sin impacto en lotes.</strong> Este producto no cuenta como BAF. Regístralo en cualquier tienda.</div>`;
+    return;
+  }
+  const scores=TIENDAS.map(t=>scoreTienda(t)).sort((a,b)=>b.score-a.score);
+  const mejor=scores[0];
+
+  let html=`<div class="card"><div class="card-title">Sugerencia de tienda</div>`;
+  html+=`<div class="gcards" style="margin-bottom:12px">`;
+  scores.forEach(({t,razon,prioridad},i)=>{
+    const tr2=trim(t); const nv=getNT(tr2); const bl=getBL(t.baf_mes); const sig=getSig(t.baf_mes);
+    const bc=nv?.n==='PDV TOP'?'b-top':nv?.n==='PDV Premium'?'b-prem':'b-no';
+    const isBest=i===0;
+    html+=`<div class="card${isBest?' card-best':''}" style="margin-bottom:0">
+      ${isBest?`<div style="margin-bottom:6px"><span class="badge b-blue">Recomendada</span></div>`:''}
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">${t.nombre}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--text2)">${t.baf_mes} BAF</span>
+        <span class="badge ${bc}" style="font-size:10px">${nv?nv.n:'Sin nivel'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2)">Bonus lote: <strong style="color:var(--g)">${fmt(bl)}</strong></div>
+      ${sig?`<div style="font-size:12px;color:var(--text2)">Faltan <strong>${sig.min-t.baf_mes}</strong> para ${fmt(sig.b)}</div>`:''}
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:${prioridad===1?'var(--w)':'var(--text2)'}">
+        ${razon}
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+  const cls=mejor.prioridad===1?'alert-w':'alert-g';
+  html+=`<div class="alert ${cls}"><strong>${mejor.t.nombre}</strong> — ${mejor.razon}.</div>`;
+  html+=`</div>`;
+  sugEl.innerHTML=html;
+}
+
+async function registrarVenta(){
+  const tipo=document.getElementById('s-prod').value;
+  const tid=parseInt(document.getElementById('s-reg').value);
+  if(!tipo||!tid){alert('Selecciona tienda y producto');return;}
+  const p=PROD[tipo];
+  const t=TIENDAS.find(x=>x.id===tid);
+  if(!t) return;
+  if(p.baf) t.baf_mes++;
+  await guardarTienda(t);
+  renderAll();
+  onProd();
+  alert(`Registrado en ${t.nombre}${p.baf?' · BAF: '+t.baf_mes:''}`);
+}
+
+// LOTE
+function addLoteItem(){
+  const tipo=document.getElementById('l-prod').value;
+  if(!tipo) return;
+  LOTE_ITEMS.push(tipo);
+  renderLoteLista();
+}
+
+function renderLoteLista(){
+  const el=document.getElementById('lote-lista');
+  if(!LOTE_ITEMS.length){el.innerHTML='<p style="font-size:13px;color:var(--text2)">Sin operaciones añadidas.</p>';return;}
+  el.innerHTML=LOTE_ITEMS.map((k,i)=>`
+    <div class="lote-item">
+      <div class="lote-num">${i+1}</div>
+      <div class="lote-prod">${PROD[k]?.n||k} <span class="badge ${PROD[k]?.baf?'b-orange':'b-no'}" style="font-size:10px;margin-left:4px">${PROD[k]?.baf?'BAF':'No BAF'}</span></div>
+      <button class="btn btn-d btn-sm" onclick="quitarLoteItem(${i})">✕</button>
+    </div>`).join('');
+}
+
+function quitarLoteItem(i){LOTE_ITEMS.splice(i,1);renderLoteLista();}
+
+function calcularLote(){
+  if(!LOTE_ITEMS.length){alert('Añade al menos una operación');return;}
+  const reparto=repartirLote(LOTE_ITEMS);
+  
+  // Resumen por tienda
+  const porTienda={};
+  reparto.forEach(r=>{
+    if(r.tienda==='Cualquier tienda') return;
+    if(!porTienda[r.tienda]) porTienda[r.tienda]=0;
+    porTienda[r.tienda]++;
+  });
+
+  let html=`<div class="card"><div class="card-title">Reparto óptimo</div>`;
+  
+  // Resumen rápido
+  const conTienda=Object.entries(porTienda);
+  if(conTienda.length){
+    html+=`<div class="gcards" style="margin-bottom:12px">`;
+    conTienda.forEach(([nombre,n])=>{
+      const t=TIENDAS.find(x=>x.nombre===nombre);
+      const bafFinal=t?t.baf_mes+n:n;
+      const bl=getBL(bafFinal);
+      html+=`<div class="metric"><div class="l">${nombre}</div><div class="v">${n} BAF</div><div style="font-size:12px;color:var(--g);margin-top:2px">Bonus: ${fmt(bl)}</div></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Detalle item a item
+  html+=`<div style="margin-bottom:8px">`;
+  reparto.forEach((r,i)=>{
+    const p=PROD[r.tipo];
+    html+=`<div class="lote-item">
+      <div class="lote-num">${i+1}</div>
+      <div style="flex:1">
+        <div class="lote-prod">${p?.n||r.tipo}</div>
+        <div class="lote-motivo">${r.razon}</div>
+      </div>
+      <span class="lote-tienda">${r.tienda}</span>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Bonus total estimado tras reparto
+  const bafFinal=TIENDAS.map(t=>({...t,baf_mes:t.baf_mes+(porTienda[t.nombre]||0)}));
+  const bonusTotal=bafFinal.reduce((s,t)=>s+getBL(t.baf_mes),0);
+  const bonusActual=TIENDAS.reduce((s,t)=>s+getBL(t.baf_mes),0);
+  const ganancia=bonusTotal-bonusActual;
+
+  html+=`<div class="alert ${ganancia>0?'alert-g':'alert-b'}">
+    <strong>Bonus de lote tras este reparto: ${fmt(bonusTotal)}</strong>
+    ${ganancia>0?` (+${fmt(ganancia)} respecto al estado actual)`:''}
+  </div>`;
+  html+=`</div>`;
+  document.getElementById('lote-result').innerHTML=html;
+}
+
+// TIENDAS
+function renderTiendas(){
+  const c=document.getElementById('t-cards');c.innerHTML='';
+  TIENDAS.forEach(t=>{
+    const bl=getBL(t.baf_mes);const sig=getSig(t.baf_mes);const f=sig?sig.min-t.baf_mes:0;
+    const pct=sig?Math.min(100,Math.round(t.baf_mes/sig.max*100)):100;
+    const col=f===1?'var(--g)':f<=3?'var(--w)':'#5DCAA5';
+    const tr2=trim(t);const nv=getNT(tr2);
+    const bc=nv?.n==='PDV TOP'?'b-top':nv?.n==='PDV Premium'?'b-prem':'b-no';
+    c.innerHTML+=`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:15px;font-weight:600">${t.nombre}</span>
+        <span class="badge ${bc}" style="font-size:10px">${nv?nv.n:'Sin nivel'}</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:4px">${t.baf_mes} <span style="font-size:13px;font-weight:400;color:var(--text2)">BAF</span></div>
+      <div class="pb"><div class="pf" style="width:${pct}%;background:${col}"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${sig?`Faltan <strong>${f}</strong> para ${fmt(sig.b)}`:'Lote máximo'}</div>
+      <div style="font-size:12px;color:var(--text2)">Bonus lote: <strong style="color:var(--g)">${fmt(bl)}</strong></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="editarBaf(${t.id})">Editar BAF</button>
+        <button class="btn btn-sm btn-d" onclick="eliminarTienda(${t.id})">Eliminar</button>
+      </div>
+    </div>`;
+  });
+}
+
+function renderResMes(){
+  const tb=TIENDAS.reduce((s,t)=>s+t.baf_mes,0);
+  const tbl=TIENDAS.reduce((s,t)=>s+getBL(t.baf_mes),0);
+  document.getElementById('t-resumen').innerHTML=`
+    <div class="metric"><div class="l">BAF totales</div><div class="v">${tb}</div></div>
+    <div class="metric"><div class="l">Bonus lotes</div><div class="v g">${fmt(tbl)}</div></div>
+    <div class="metric"><div class="l">Incentivo conectividad</div><div class="v g">${fmt(TIENDAS.length*55)}</div></div>`;
+}
+
+async function addTienda(){
+  const n=document.getElementById('i-nueva').value.trim();
+  if(!n) return;
+  const t={id:Date.now(),nombre:n,baf_mes:0,baf_enero:0,baf_febrero:0};
+  TIENDAS.push(t);
+  await guardarTienda(t);
+  document.getElementById('i-nueva').value='';
+  renderAll();
+}
+
+async function editarBaf(id){
+  const t=TIENDAS.find(x=>x.id===id);
+  const v=prompt(`BAF actuales este mes en ${t.nombre}:`,t.baf_mes);
+  if(v===null) return;
+  const n=parseInt(v);
+  if(!isNaN(n)&&n>=0){t.baf_mes=n;await guardarTienda(t);renderAll();}
+}
+
+// TRIMESTRAL
+function renderTrim(){
+  const wrap=document.getElementById('trim-cards');
+  const tabla=document.getElementById('trim-tabla');
+  wrap.innerHTML='';tabla.innerHTML='';
+  TIENDAS.forEach(t=>{
+    const tr2=trim(t);const nv=getNT(tr2);
+    const sigT=TNIVELES.find(x=>tr2<x.min);
+    const pct=nv?100:sigT?Math.min(100,Math.round(tr2/sigT.min*100)):0;
+    const col=nv?'var(--g)':'var(--w)';
+    const bc=nv?.n==='PDV TOP'?'b-top':nv?.n==='PDV Premium'?'b-prem':'b-no';
+    let meta=nv?.n==='PDV TOP'?'Nivel máximo':nv?.n==='PDV Premium'?`Faltan ${30-tr2} para TOP (+1.050€)`:sigT?`Faltan ${sigT.min-tr2} para ${sigT.n}`:'';
+    wrap.innerHTML+=`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:15px;font-weight:600">${t.nombre}</span>
+        <span class="badge ${bc}" style="font-size:10px">${nv?nv.n:'Sin nivel'}</span>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:${col};margin-bottom:4px">${nv?fmt(nv.b):'0€'}</div>
+      <div class="pb"><div class="pf" style="width:${pct}%;background:${col}"></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">${tr2} BAF · ${meta}</div>
+    </div>`;
+    const niv=getNT(tr2);
+    tabla.innerHTML+=`<tr>
+      <td style="font-weight:600">${t.nombre}</td>
+      <td class="tc">${t.baf_enero}</td><td class="tc">${t.baf_febrero}</td><td class="tc">${t.baf_mes}</td>
+      <td class="tc" style="font-weight:600">${tr2}</td>
+      <td class="tc"><span class="badge ${niv?.n==='PDV TOP'?'b-top':niv?.n==='PDV Premium'?'b-prem':'b-no'}" style="font-size:10px">${niv?niv.n:'Sin nivel'}</span></td>
+      <td class="tc" style="color:var(--g);font-weight:600">${niv?fmt(niv.b):'—'}</td>
+    </tr>`;
+  });
+}
+
+// EXTRAS
+async function addExtra(){
+  const n=document.getElementById('e-nombre').value.trim();
+  const im=parseFloat(document.getElementById('e-importe').value);
+  const ti=document.getElementById('e-tipo').value;
+  if(!n||isNaN(im)||im<=0){alert('Rellena nombre e importe');return;}
+  const e={id:Date.now(),nombre:n,importe:im,tipo:ti};
+  EXTRAS.push(e);
+  await guardarExtra(e);
+  document.getElementById('e-nombre').value='';
+  document.getElementById('e-importe').value='';
+  renderExtras();
+}
+
+function renderExtras(){
+  const el=document.getElementById('extras-lista');
+  if(!EXTRAS.length){el.innerHTML=`<p style="font-size:13px;color:var(--text2)">Sin extras configurados.</p>`;return;}
+  const tl={baf:'Solo BAF',movil:'Solo móvil',todo:'Todo'};
+  el.innerHTML=EXTRAS.map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:6px">
+      <div>
+        <div style="font-size:14px;font-weight:500">${e.nombre}</div>
+        <div style="font-size:12px;color:var(--text2)">${tl[e.tipo]}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:15px;font-weight:700;color:var(--g)">+${fmt(e.importe)}</span>
+        <button class="btn btn-sm btn-d" onclick="eliminarExtra(${e.id})">Quitar</button>
+      </div>
+    </div>`).join('');
+}
+
+// TARIFAS
+function renderTabla(){
+  const b=document.getElementById('t-prod');b.innerHTML='';
+  Object.values(PROD).forEach(p=>{
+    b.innerHTML+=`<tr><td>${p.n}</td><td class="tc" style="color:var(--g);font-weight:600">${fmt(p.c)}</td><td class="tc" style="color:${p.baf?'var(--g)':'var(--text3)'}">${p.baf?'Sí':'No'}</td></tr>`;
+  });
+}
+
+// TABS
+function tab(name,el){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('p-'+name).classList.add('on');
+  if(name==='tiendas'){renderTiendas();renderResMes();}
+  if(name==='trimestral') renderTrim();
+  if(name==='extras') renderExtras();
+  if(name==='tarifas') renderTabla();
+  if(name==='venta') refreshSelReg();
+  if(name==='lote') renderLoteLista();
+}
+
+// INIT
+initDB();
+</script>
+
+
+</body></html>
